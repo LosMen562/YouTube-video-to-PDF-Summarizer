@@ -96,41 +96,15 @@ jobs:
       
       - name: Verify all classes exist
         run: |
-          python -c "
-import sys
-sys.path.insert(0, '.')
-from youtube_to_pdf import YouTubeToMarkdown, VideoType
-print('✓ YouTubeToMarkdown class exists')
-print('✓ VideoType class exists')
-          "
+          python -c "import sys; sys.path.insert(0, '.'); from youtube_to_pdf import YouTubeToMarkdown, VideoType; print('✓ YouTubeToMarkdown class exists'); print('✓ VideoType class exists')"
       
       - name: Check video type detection methods
         run: |
-          python -c "
-import sys
-sys.path.insert(0, '.')
-from youtube_to_pdf import YouTubeToMarkdown
-obj = YouTubeToMarkdown('test')
-assert hasattr(obj, 'detect_video_type'), 'Missing detect_video_type method'
-assert hasattr(obj, '_structure_diy_tutorial'), 'Missing _structure_diy_tutorial method'
-assert hasattr(obj, '_structure_list'), 'Missing _structure_list method'
-assert hasattr(obj, '_structure_general'), 'Missing _structure_general method'
-print('✓ All video type methods exist')
-          "
+          python -c "import sys; sys.path.insert(0, '.'); from youtube_to_pdf import YouTubeToMarkdown; obj = YouTubeToMarkdown('test'); assert hasattr(obj, 'detect_video_type'); assert hasattr(obj, '_structure_diy_tutorial'); assert hasattr(obj, '_structure_list'); assert hasattr(obj, '_structure_general'); print('✓ All video type methods exist')"
       
       - name: Verify file operations
         run: |
-          python -c "
-import sys
-sys.path.insert(0, '.')
-from youtube_to_pdf import YouTubeToMarkdown
-obj = YouTubeToMarkdown('test')
-assert hasattr(obj, 'download_audio'), 'Missing download_audio method'
-assert hasattr(obj, 'transcribe_audio'), 'Missing transcribe_audio method'
-assert hasattr(obj, 'generate_markdown'), 'Missing generate_markdown method'
-assert hasattr(obj, 'cleanup'), 'Missing cleanup method'
-print('✓ All file operation methods exist')
-          "
+          python -c "import sys; sys.path.insert(0, '.'); from youtube_to_pdf import YouTubeToMarkdown; obj = YouTubeToMarkdown('test'); assert hasattr(obj, 'download_audio'); assert hasattr(obj, 'transcribe_audio'); assert hasattr(obj, 'generate_markdown'); assert hasattr(obj, 'cleanup'); print('✓ All file operation methods exist')"
 
   # Job 4: Documentation and style (ALLOWED TO FAIL)
   documentation:
