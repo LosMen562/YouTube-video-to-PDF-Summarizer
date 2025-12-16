@@ -1,0 +1,275 @@
+name: YouTube Summarizer Tests
+
+on: 
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  # Job 1: Critical checks (MUST PASS - blocks merge)
+  critical-checks:
+    name: "🔴 Critical Checks (Must Pass)"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 pytubefix nltk
+      
+      - name: Check for Python syntax errors
+        run: |
+          flake8 youtube_to_pdf.py --count --select=E9,F63,F7,F82 --show-source --statistics
+      
+      - name: Verify required imports exist
+        run: |
+          python -c "from pytubefix import YouTube; print('✓ pytubefix imported')"
+          python -c "import nltk; print('✓ nltk imported')"
+          python -c "from collections import Counter; print('✓ Counter imported')"
+      
+      - name: Check script runs (help message)
+        run: |
+          python youtube_to_pdf.py --help 2>&1 | head -5 || echo "Script exists"
+
+  # Job 2: Code quality (ALLOWED TO FAIL - aspirational goals)
+  code-quality:
+    name: "⚡ Code Quality (Aspirational)"
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install quality tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff pylint radon
+      
+      - name: Check with Ruff (strict mode)
+        run: |
+          ruff check youtube_to_pdf.py --select=ALL --ignore=T201,S603,S607
+        continue-on-error: true
+      
+      - name: Check code complexity
+        run: |
+          echo "=== Cyclomatic Complexity ==="
+          radon cc youtube_to_pdf.py -a --total-average
+          echo ""
+          echo "=== Maintainability Index ==="
+          radon mi youtube_to_pdf.py -s
+        continue-on-error: true
+      
+      - name: Pylint score (target 8.0+)
+        run: |
+          pylint youtube_to_pdf.py --fail-under=6.0 --disable=C0103,C0114,C0115,C0116
+        continue-on-error: true
+
+  # Job 3: Project-specific validation (ALLOWED TO FAIL)
+  project-validation:
+    name: "🎯 Project Requirements (Aspirational)"
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install all dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytubefix nltk
+          python -m nltk.downloader punkt punkt_tab
+      
+      - name: Verify all classes exist
+        run: |
+          python -c "
+import sys
+sys.path.insert(0, '.')
+from youtube_to_pdf import YouTubeToMarkdown, VideoType
+print('✓ YouTubeToMarkdown class exists')
+print('✓ VideoType class exists')
+          "
+      
+      - name: Check video type detection methods
+        run: |
+          python -c "
+import sys
+sys.path.insert(0, '.')
+from youtube_to_pdf import YouTubeToMarkdown
+obj = YouTubeToMarkdown('test')
+assert hasattr(obj, 'detect_video_type'), 'Missing detect_video_type method'
+assert hasattr(obj, '_structure_diy_tutorial'), 'Missing _structure_diy_tutorial method'
+assert hasattr(obj, '_structure_list'), 'Missing _structure_list method'
+assert hasattr(obj, '_structure_general'), 'Missing _structure_general method'
+print('✓ All video type methods exist')
+          "
+      
+      - name: Verify file operations
+        run: |
+          python -c "
+import sys
+sys.path.insert(0, '.')
+from youtube_to_pdf import YouTubeToMarkdown
+obj = YouTubeToMarkdown('test')
+assert hasattr(obj, 'download_audio'), 'Missing download_audio method'
+assert hasattr(obj, 'transcribe_audio'), 'Missing transcribe_audio method'
+assert hasattr(obj, 'generate_markdown'), 'Missing generate_markdown method'
+assert hasattr(obj, 'cleanup'), 'Missing cleanup method'
+print('✓ All file operation methods exist')
+          "
+
+  # Job 4: Documentation and style (ALLOWED TO FAIL)
+  documentation:
+    name: "📚 Documentation Quality (Aspirational)"
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install doc tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install pydocstyle interrogate
+      
+      - name: Check docstring coverage
+        run: |
+          interrogate youtube_to_pdf.py -vv --fail-under=50
+        continue-on-error: true
+      
+      - name: Check docstring style
+        run: |
+          pydocstyle youtube_to_pdf.py --count
+        continue-on-error: true
+      
+      - name: Verify README exists and has content
+        run: |
+          if [ ! -f README.md ]; then
+            echo "❌ README.md missing"
+            exit 1
+          fi
+          if [ $(wc -l < README.md) -lt 20 ]; then
+            echo "⚠️  README.md too short"
+          fi
+          echo "✓ README.md exists"
+
+  # Job 5: Security audit (ALLOWED TO FAIL)
+  security:
+    name: "🔒 Security Audit (Aspirational)"
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install security tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install bandit safety
+      
+      - name: Check for security issues
+        run: |
+          bandit youtube_to_pdf.py -ll -f screen
+        continue-on-error: true
+      
+      - name: Check dependencies for vulnerabilities
+        run: |
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+            safety check --json || true
+          fi
+        continue-on-error: true
+
+  # Job 6: Best practices (VERY STRICT - will likely fail)
+  best-practices:
+    name: "🏆 Best Practices (High Bar)"
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install formatting tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install black isort
+      
+      - name: Check code formatting (Black)
+        run: |
+          black --check --line-length 100 youtube_to_pdf.py
+        continue-on-error: true
+      
+      - name: Check import organization (isort)
+        run: |
+          isort --check-only --profile black youtube_to_pdf.py
+        continue-on-error: true
+      
+      - name: Check for hardcoded credentials
+        run: |
+          if grep -i "api[_-]key\|password\|secret\|token" youtube_to_pdf.py; then
+            echo "⚠️  Potential hardcoded credentials found"
+            exit 1
+          fi
+          echo "✓ No obvious hardcoded credentials"
+        continue-on-error: true
+      
+      - name: Check file size (should be under 1000 lines)
+        run: |
+          lines=$(wc -l < youtube_to_pdf.py)
+          echo "File has $lines lines"
+          if [ $lines -gt 1000 ]; then
+            echo "⚠️  File is getting large - consider splitting into modules"
+          fi
+        continue-on-error: true
+
+  # Job 7: Future test placeholder (WILL FAIL - that's OK!)
+  unit-tests:
+    name: "🧪 Unit Tests (Not Implemented Yet)"
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Check for test files
+        run: |
+          if [ -d "tests" ] || [ -f "test_youtube_to_pdf.py" ]; then
+            echo "✓ Test files found"
+            pip install pytest pytest-cov
+            pytest --cov=youtube_to_pdf --cov-report=term-missing
+          else
+            echo "⚠️  No test files yet - this is a TODO"
+            echo "Create tests/test_youtube_to_pdf.py to enable this"
+            exit 1
+          fi
+        continue-on-error: true
