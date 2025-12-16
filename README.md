@@ -1,18 +1,71 @@
-# YouTube Video to PDF Summarizer
+# YouTube to Markdown Summarizer
 
-![PyPI version](https://img.shields.io/pypi/v/python-boilerplate.svg)
-[![Documentation Status](https://readthedocs.org/projects/python-boilerplate/badge/?version=latest)](https://python-boilerplate.readthedocs.io/en/latest/?version=latest)
-
-Script downloads a YouTube video's audio, transcribes it, analyzes the content, and generates a structured PDF based on the video type (DIY turorial, list, or general info).
-
-* PyPI package: https://pypi.org/project/python-boilerplate/
-* Free software: MIT License
-* Documentation: https://python-boilerplate.readthedocs.io.
+A Python tool that downloads YouTube videos, transcribes them using OpenAI Whisper, and generates organized Markdown summaries.
 
 ## Features
 
-* TODO
+-   🎥 Downloads audio from YouTube videos
+-   🎤 Transcribes audio using OpenAI Whisper
+-   🤖 Auto-detects video type (DIY Tutorial, List/Ideas, General Info)
+-   📝 Generates structured Markdown with timestamps
+-   ⚡ Works with Python 3.11+
 
-## Credits
+## Installation
 
-This package was created with [Cookiecutter](https://github.com/audreyfeldroy/cookiecutter) and the [audreyfeldroy/cookiecutter-pypackage](https://github.com/audreyfeldroy/cookiecutter-pypackage) project template.
+```bash
+# Create virtual environment
+python -m venv .venv
+
+# Activate virtual environment
+# Windows:
+.venv\Scripts\activate
+# macOS/Linux:
+source .venv/bin/activate
+
+# Install dependencies
+pip install pytubefix whisper openai-whisper nltk
+```
+
+## Usage
+
+```bash
+# Run interactively
+python youtube_to_pdf.py
+
+# Or with arguments
+python youtube_to_pdf.py "https://www.youtube.com/watch?v=VIDEO_ID" "output.md"
+```
+
+## Requirements
+
+-   Python 3.11 or higher
+-   pytubefix
+-   openai-whisper
+-   nltk
+
+## Output
+
+Generates a Markdown file with:
+
+-   Video metadata
+-   Structured content based on video type
+-   Timestamps for easy reference
+-   Organized sections
+
+## Converting to PDF
+
+Use online tools or pandoc:
+
+```bash
+pandoc output.md -o output.pdf
+```
+
+## License
+
+MIT
+
+## Todo
+
+-   [ ] Add more video type detection
+-   [ ] Improve section splitting
+-   [ ] Add export options (HTML, DOCX)
